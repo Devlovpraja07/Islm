@@ -1,297 +1,162 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ISLAMIC KNOWLEDGE</title>
+    <title>Key Generator App</title>
     <style>
-        :root {
-            --neon-green: #39ff14;
-            --neon-blue: #18fefe;
-            --dark-bg: #121212;
-            --light-bg: #f5f5f5;
-            --card-bg: #1e1e1e;
-            --text-color-light: #e0e0e0;
-            --text-color-dark: #333333;
-            --badge-bg: #18fefe;
-            --header-bg: #1e1e1e;
-            --shadow-color: rgba(0, 0, 0, 0.7);
-            --arabic-text-color: #39ff14;
-            --section-title-color: #18fefe;
-            --nav-bg: #1e1e1e;
-            --nav-text-color: #666;
-        }
-
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--light-bg);
-            color: var(--text-color-dark);
-            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        body[data-theme="dark"] {
-            background: var(--dark-bg);
-            color: var(--text-color-light);
-        }
-
-        .header {
-            background: var(--header-bg);
-            color: var(--neon-green);
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 5px var(--shadow-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
         }
 
         .container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 5px var(--shadow-color);
-            transition: background-color 0.3s;
+        #generateBtn {
+            width: 100%;
+            padding: 18px;
+            font-size: 17px;
+            background: #CECED2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: not-allowed;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.2);
+            transition: all 0.2s ease;
+            margin-top: 20px;
         }
 
-        .nav-bottom {
-            background: var(--nav-bg);
-            display: flex;
-            justify-content: space-around;
-            padding: 1rem;
-            box-shadow: 0 -2px 5px var(--shadow-color);
-            position: sticky;
-            bottom: 0;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--nav-text-color);
+        #generateBtn.active {
+            background: #007AFF;
             cursor: pointer;
-            transition: color 0.3s;
         }
 
-        .nav-item.active {
-            color: var(--neon-green);
+        #keyDisplay {
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            font-size: 18px;
+            word-break: break-word;
+            display: none;
         }
 
-        .nav-item i {
-            font-size: 1.5rem;
-            margin-bottom: 0.3rem;
+        .copy-btn {
+            padding: 10px 20px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
         }
 
-        .arabic {
-            font-size: 1.5rem;
-            line-height: 2.5rem;
-            text-align: right;
-            direction: rtl;
-            font-family: 'Amiri', serif;
-            color: var(--arabic-text-color);
-            margin: 1rem 0;
-        }
-
-        .translation {
-            background: var(--card-bg);
-            padding: 1rem;
+        .update-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
             border-radius: 10px;
-            margin: 1rem 0;
-            line-height: 1.6;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            display: none;
         }
 
-        .section-title {
-            color: var(--section-title-color);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .step-list {
-            padding-left: 1.5rem;
-            line-height: 2;
-        }
-
-        .badge {
-            background: var(--badge-bg);
-            color: var(--text-color-light);
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        .theme-toggle {
+        .update-btn {
+            padding: 10px 20px;
+            background: #FF3B30;
+            color: white;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.5rem;
-            color: var(--neon-blue);
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-            }
-
-            .theme-toggle {
-                margin-top: 0.5rem;
-            }
         }
     </style>
 </head>
-<body data-theme="light">
-    <div class="header">
-        <h1>🕌 इस्लामिक गाइड</h1>
-        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
-    </div>
-
+<body>
     <div class="container">
-        <!-- अत्तहियात -->
-        <div class="card" id="attahiyat">
-            <div class="section-title">
-                📖 अत्तहियात (तशह्हुद)
-            </div>
-            <div class="arabic">
-                ٱلتَّحِيَّاتُ لِلَّٰهِ وَٱلصَّلَوَاتُ وَٱلطَّيِّبَاتُ، ٱلسَّلَامُ عَلَيْكَ أَيُّهَا ٱلنَّبِيُّ وَرَحْمَةُ ٱللَّٰهِ وَبَرَكَاتُهُ، ٱلسَّلَامُ عَلَيْنَا وَعَلَىٰ عِبَادِ ٱللَّٰهِ ٱلصَّالِحِينَ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا ٱللَّٰهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ
-            </div>
-            <div class="translation">
-                <span class="badge">अर्थ</span>
-                <p>अत्तहिय्यातु लिल्लाहि वस्सलावातु, वत्त्तय्यिबातु अस्सलामु ‘अलैका’ अय्युहं-नबिय्यु व रहमतुल्लाहि व बरकातुहू अस्सलामु ‘अलेना व ‘अला ‘इबदिल्लाहिस-सालिहीन अश-हदू ‘अं-ला ‘इलाहा ‘इल्लल्लाहू व ‘अश-हदू ‘अन्ना मुहम्मदन ‘अब्दुहु व रसूलुहु। 
-            </div>
-        </div>
-
-        <!-- दुरूद इब्राहीम -->
-        <div class="card" id="durood">
-            <div class="section-title">
-                🌙 दुरूद-ए-इब्राहीम
-            </div>
-            <div class="arabic">
-                اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ
-            </div>
-            <div class="translation">
-                <span class="badge">अर्थ</span>
-                <p>हे अल्लाह! मुहम्मद और उनके परिवार पर रहमत भेज, जैसे तूने इब्राहीम और उनके परिवार पर रहमत भेजी। निश्चय ही तू प्रशंसा के योग्य और महान है। हे अल्लाह! मुहम्मद और उनके परिवार पर बरकत अता कर, जैसे तूने इब्राहीम और उनके परिवार पर बरकत अता की। निश्चय ही तू प्रशंसा के योग्य और महान है।</p>
-            </div>
-        </div>
-
-        <!-- नमाज़ गाइड -->
-        <div class="card" id="namaz">
-            <div class="section-title">
-                🕋 नमाज़ का तरीका
-            </div>
-            <div class="step-list">
-                <div class="step">
-                    <h3>1. नियत</h3>
-                    <p>किबला की ओर मुंह करके खड़े हो जाएं और नमाज़ की नियत करें</p>
-                </div>
-                <div class="step">
-                    <h3>2. तकबीर</h3>
-                    <p>हाथ कानों तक उठाएं और "अल्लाहु अकबर" कहें</p>
-                </div>
-                <div class="step">
-                    <h3>3. क़िरात</h3>
-                    <p>सूरह फातिहा और कोई अन्य सूरह पढ़ें</p>
-                </div>
-                <div class="step">
-                    <h3>4. रुकू</h3>
-                    <p>कमर झुकाकर "सुब्हाना रब्बियल अज़ीम" पढ़ें</p>
-                </div>
-                <div class="step">
-                    <h3>5. सजदा</h3>
-                    <p>दो बार सजदा करें और "सुब्हाना रब्बियल आ'ला" पढ़ें</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- दुआएं -->
-        <div class="card" id="dua">
-            <div class="section-title">
-                🤲 महत्वपूर्ण दुआएं
-            </div>
-            <div class="dua-item">
-                <div class="arabic">
-                    رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ
-                </div>
-                <div class="translation">
-                    <span class="badge">अर्थ</span>
-                    <p>हे हमारे रब! हमें दुनिया में भलाई दे और आखिरत में भी भलाई दे, और हमें आग के अज़ाब से बचा।</p>
-                </div>
-            </div>
-            
-            <div class="dua-item">
-                <div class="arabic">
-                    اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى
-                </div>
-                <div class="translation">
-                    <span class="badge">अर्थ</span>
-                    <p>हे अल्लाह! मैं तुझसे हिदायत, तक़्वा, पाकदामनी और बेपरवाही (की दौलत) मांगता हूं।</p>
-                </div>
-            </div>
-        </div>
+        <button id="shareBtn" onclick="handleShare()">🔗 Refer a Friend</button>
+        <p id="referralStatus">0/1 referral completed</p>
+        <button id="generateBtn" onclick="generateKey()">🔑 Generate Key</button>
+        <div id="keyDisplay"></div>
     </div>
 
-    <div class="nav-bottom">
-        <div class="nav-item active" onclick="showSection('attahiyat')">
-            📖<span>तशह्हुद</span>
-        </div>
-        <div class="nav-item" onclick="showSection('durood')">
-            🌙<span>दुरूद</span>
-        </div>
-        <div class="nav-item" onclick="showSection('namaz')">
-            🕋<span>नमाज़</span>
-        </div>
-        <div class="nav-item" onclick="showSection('dua')">
-            🤲<span>दुआएं</span>
-        </div>
+    <div class="update-section" id="updateSection">
+        <p>New update available!</p>
+        <button class="update-btn" onclick="downloadUpdate()">Download Update</button>
     </div>
 
     <script>
-        function showSection(sectionId) {
-            // Hide all cards
-            document.querySelectorAll('.card').forEach(card => {
-                card.style.display = 'none';
-            });
-            
-            // Show selected section
-            document.getElementById(sectionId).style.display = 'block';
-            
-            // Update active nav item
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // Scroll to top
-            document.querySelector('.container').scrollTop = 0;
+        let referralCount = 0;
+        let permanentKey = "Just9-zRhATPt";
+
+        function handleShare() {
+            if (referralCount < 1) {
+                const link = `https://example.com/invite?ref=${Math.random().toString(36).substr(2, 8)}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    alert("Referral link copied! Share it with a friend.");
+                });
+
+                referralCount++;
+                document.getElementById('referralStatus').textContent = `${referralCount}/1 referral completed`;
+                
+                if (referralCount >= 1) {
+                    document.getElementById('generateBtn').classList.add('active');
+                    document.getElementById('generateBtn').disabled = false;
+                }
+            }
         }
 
-        // Show first section by default
-        showSection('attahiyat');
+        function generateKey() {
+            if (referralCount < 1) return;
 
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute("data-theme");
-            const newTheme = currentTheme === "light" ? "dark" : "light";
-            body.setAttribute("data-theme", newTheme);
-            document.querySelector('.theme-toggle').textContent = newTheme === "light" ? "🌙" : "☀️";
+            document.getElementById('keyDisplay').innerHTML = `
+                <div style="color: #666;">Your Permanent Key:</div>
+                <div style="font-size: 24px; margin: 15px 0; color: #007AFF; font-weight: bold;">${permanentKey}</div>
+                <button class="copy-btn" onclick="copyKey()">Copy Key</button>
+            `;
+            document.getElementById('keyDisplay').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
         }
+
+        function copyKey() {
+            navigator.clipboard.writeText(permanentKey).then(() => {
+                alert("Key copied to clipboard!");
+            });
+        }
+
+        function checkForUpdate() {
+            fetch("https://your-backend.com/check-update")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.updateAvailable) {
+                        document.getElementById("updateSection").style.display = "block";
+                    }
+                })
+                .catch(error => console.error("Update check failed:", error));
+        }
+
+        function downloadUpdate() {
+            window.location.href = "https://your-backend.com/download-latest.apk";
+        }
+
+        checkForUpdate();
     </script>
 </body>
-  </html>
+</html>
