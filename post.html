@@ -1,0 +1,143 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Groups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .menu-hidden { transform: translateY(100%); opacity: 0; pointer-events: none; }
+    .menu-visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body class="bg-[#002933] text-white min-h-screen flex flex-col">
+
+<!-- Top bar -->
+<div class="flex items-center justify-between px-4 pt-6 pb-3">
+  <h1 class="text-3xl font-normal">Groups</h1>
+  <button aria-label="Add group" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black text-3xl font-light leading-none">+</button>
+</div>
+
+<!-- Search -->
+<div class="px-4 pb-4">
+  <div class="relative">
+    <input class="w-full rounded-xl bg-[#0f3a44] placeholder:text-white placeholder:opacity-70 text-white py-2 pl-10 pr-10 text-lg focus:outline-none" placeholder="ummah" type="search"/>
+    <button aria-label="Clear search" class="absolute right-3 top-1/2 -translate-y-1/2 text-white opacity-70 hover:opacity-100"><i class="fas fa-times"></i></button>
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white opacity-70 text-lg"><i class="fas fa-search"></i></span>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto border-b border-white/20">
+  <button class="flex items-center gap-1 rounded-full border border-white/30 bg-white/10 px-4 py-1 text-black text-base whitespace-nowrap"><i class="fas fa-filter"></i></button>
+  <button class="flex items-center gap-1 rounded-full border border-white/30 bg-white text-black text-base whitespace-nowrap">
+    All Groups <span class="ml-1 rounded-full bg-[#d9f99d] text-[#4d7c0f] text-xs font-semibold px-2 py-0.5">5</span>
+  </button>
+  <button class="flex items-center gap-1 rounded-full border border-white/30 bg-white/10 text-white text-base whitespace-nowrap">Recently Active <i class="fas fa-chevron-down text-xs"></i></button>
+  <button class="flex items-center gap-1 rounded-full border border-white/30 bg-white/10 text-white text-base whitespace-nowrap">All Groups</button>
+</div>
+
+<!-- Groups List -->
+<div class="flex-1 overflow-y-auto bg-white rounded-t-3xl pt-6 px-6 text-black">
+  <ul class="space-y-6">
+    <!-- Group Items (Same as before, skipped for brevity — aapke original wale paste kar lena) -->
+    <!-- Example item -->
+    <li class="flex items-center gap-4">
+      <img class="w-20 h-20 rounded-2xl object-cover flex-shrink-0" src="https://storage.googleapis.com/a1aa/image/ddedd141-0a0c-46bb-4375-4bfb4d890999.jpg" alt="" />
+      <div class="flex flex-col flex-1">
+        <span class="text-xl font-normal">New Muslims</span>
+        <span class="text-sm text-gray-500">Public / Group · 20 members</span>
+        <button class="mt-2 w-max rounded-full bg-[#002933] text-white px-5 py-1.5 text-sm flex items-center gap-2"><i class="fas fa-check"></i> Organizer</button>
+      </div>
+    </li>
+    <!-- Aur baaki aapke original groups -->
+  </ul>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bg-[#002933] text-[#a3d22f] flex justify-between items-center px-6 py-3 text-xs relative">
+  <button class="flex flex-col items-center gap-1" onclick="window.location.href='a.html?section=home'"><i class="fas fa-home text-lg"></i> Home</button>
+  <button class="flex flex-col items-center gap-1" onclick="window.location.href='a.html?section=activity'"><i class="fas fa-chart-line text-lg"></i> Activity</button>
+  <button class="flex flex-col items-center gap-1" onclick="window.location.href='a.html?section=members'"><i class="fas fa-user-friends text-lg"></i> Members</button>
+  <button class="flex flex-col items-center gap-1" onclick="window.location.href='a.html?section=groups'"><i class="fas fa-users text-lg"></i> Groups</button>
+  <button id="moreBtn" class="flex flex-col items-center gap-1"><i class="fas fa-bars text-lg"></i> More</button>
+
+  <!-- Dropdown Menu -->
+  <div id="menu" class="absolute bottom-16 right-6 bg-[#0f3a44] rounded-lg shadow-lg p-4 w-48 menu-hidden transition-all duration-300 z-50">
+    <div id="profileSection" class="flex items-center gap-2 mb-2 hidden">
+      <img id="profilePic" class="w-8 h-8 rounded-full" src="" alt="">
+      <span id="profileName" class="text-sm truncate"></span>
+    </div>
+    <button class="block w-full text-left py-2 text-white hover:bg-white/10" onclick="window.location.href='a.html?section=profile'">Profile</button>
+    <button class="block w-full text-left py-2 text-white hover:bg-white/10" onclick="window.location.href='a.html?section=settings'">Settings</button>
+    <button id="logoutBtn" class="block w-full text-left py-2 text-white hover:bg-white/10">Logout</button>
+    <button id="loginBtn" class="block w-full text-left py-2 text-white hover:bg-white/10">Login</button>
+  </div>
+</nav>
+
+<script>
+  // Firebase Config (Replace this with your own Firebase project config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+    authDomain: "rn-gfx-tool.firebaseapp.com",
+    projectId: "rn-gfx-tool",
+    appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  const moreBtn = document.getElementById('moreBtn');
+  const menu = document.getElementById('menu');
+  const profileSection = document.getElementById('profileSection');
+  const profilePic = document.getElementById('profilePic');
+  const profileName = document.getElementById('profileName');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginBtn = document.getElementById('loginBtn');
+
+  // Toggle menu
+  moreBtn.addEventListener('click', () => {
+    menu.classList.toggle('menu-hidden');
+    menu.classList.toggle('menu-visible');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && !moreBtn.contains(e.target)) {
+      menu.classList.add('menu-hidden');
+      menu.classList.remove('menu-visible');
+    }
+  });
+
+  // Firebase Auth State
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      profileSection.classList.remove('hidden');
+      profilePic.src = user.photoURL;
+      profileName.textContent = user.displayName;
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'block';
+    } else {
+      profileSection.classList.add('hidden');
+      loginBtn.style.display = 'block';
+      logoutBtn.style.display = 'none';
+    }
+  });
+
+  // Login button
+  loginBtn.addEventListener('click', () => {
+    auth.signInWithPopup(provider).catch(err => alert(err.message));
+  });
+
+  // Logout button
+  logoutBtn.addEventListener('click', () => {
+    auth.signOut();
+  });
+</script>
+
+</body>
+</html>
