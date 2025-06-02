@@ -65,7 +65,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            cursor: pointer;
+            /* cursor: pointer; <-- Removed as tap to play/pause is gone */
         }
 
         .reel-content iframe,
@@ -76,8 +76,9 @@
             border: none;
             object-fit: cover;
             background-color: #000;
-            pointer-events: none;
+            /* pointer-events: none; <-- Not strictly needed if no tap on content */
         }
+        /* IG needs pointer events for its own controls */
         .reel-content .instagram-media { pointer-events: auto; }
 
 
@@ -177,24 +178,9 @@
             box-sizing: border-box;
         }
 
-        .play-pause-indicator {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(1.5);
-            font-size: 3rem;
-            color: rgba(255, 255, 255, 0.8);
-            background-color: rgba(0, 0, 0, 0.4);
-            padding: 10px;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-            pointer-events: none;
-            z-index: 20;
-        }
-        .play-pause-indicator.visible {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+        /* Play/Pause indicator is no longer needed as tap to play/pause is removed */
+        /* .play-pause-indicator { ... } */
+
     </style>
 </head>
 <body>
@@ -217,8 +203,8 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Replace with your actual API key
-            authDomain: "rn-gfx-tool.firebaseapp.com", // Replace with your auth domain
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Replace
+            authDomain: "rn-gfx-tool.firebaseapp.com", // Replace
             databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app", // Replace
             projectId: "rn-gfx-tool", // Replace
             storageBucket: "rn-gfx-tool.appspot.com", // Replace
@@ -230,21 +216,18 @@
         const reelsFeed = document.getElementById('reelsFeed');
         const initialPlaceholder = document.getElementById('initialPlaceholder');
         let currentActiveReelWrapper = null;
-        let lastTapTime = 0;
         let firstInteractionDone = false;
 
         function handleFirstInteraction() {
             if (!firstInteractionDone) {
-                console.log("First user interaction detected.");
+                // console.log("First user interaction detected.");
                 firstInteractionDone = true;
                 if (currentActiveReelWrapper) {
                     const media = currentActiveReelWrapper.querySelector('video, iframe');
                     if (media) {
-                        console.log("Attempting to play/unmute current active reel after first interaction.");
                         playMedia(media, false); // Attempt to play unmuted
                     }
                 }
-                // Clean up listeners
                 document.body.removeEventListener('click', handleFirstInteraction, { capture: true, once: true });
                 document.body.removeEventListener('touchstart', handleFirstInteraction, { capture: true, once: true });
             }
@@ -260,38 +243,26 @@
 
                 if (!mediaElement) return;
 
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.7) { // Increased threshold
-                    console.log("Reel intersecting:", reelWrapper.dataset.url);
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.75) { // Slightly higher threshold
                     if (currentActiveReelWrapper && currentActiveReelWrapper !== reelWrapper) {
-                        console.log("Pausing previous reel:", currentActiveReelWrapper.dataset.url);
                         pauseMedia(currentActiveReelWrapper.querySelector('video, iframe'), true);
                     }
                     
-                    // Determine initial mute state based on firstInteractionDone and user's explicit mute choice
-                    let initialMute = true; // Default to mute initially
+                    let initialMute = true; 
                     if (firstInteractionDone) {
-                        if (mediaElement.dataset.userMuted === 'false') { // User explicitly unmuted
-                            initialMute = false;
-                        } else if (mediaElement.dataset.userMuted === 'true') { // User explicitly muted
-                            initialMute = true;
-                        } else { // No explicit user choice, try to unmute after first interaction
-                            initialMute = false;
-                        }
+                        if (mediaElement.dataset.userMuted === 'false') initialMute = false;
+                        else if (mediaElement.dataset.userMuted === 'true') initialMute = true;
+                        else initialMute = false; 
                     }
-                    // For YouTube, the src has mute=1, so we rely on playMedia to send unMute if appropriate
                     if(mediaElement.tagName === 'IFRAME' && !firstInteractionDone && mediaElement.dataset.userMuted !== 'false'){
-                        initialMute = true; // Keep YT muted before first interaction unless user unmuted
+                        initialMute = true; 
                     }
-
-
-                    console.log(`Playing reel: ${reelWrapper.dataset.url}, Initial Mute: ${initialMute}, First Interaction: ${firstInteractionDone}`);
                     playMedia(mediaElement, initialMute); 
                     
                     currentActiveReelWrapper = reelWrapper;
                     reelWrapper.classList.add('is-active');
                     updateMuteButtonForReel(reelWrapper);
                 } else {
-                    console.log("Reel not intersecting enough:", reelWrapper.dataset.url);
                     pauseMedia(mediaElement, true);
                     reelWrapper.classList.remove('is-active');
                     if (currentActiveReelWrapper === reelWrapper) {
@@ -299,7 +270,7 @@
                     }
                 }
             });
-        }, { threshold: 0.7 });
+        }, { threshold: 0.75 }); // Adjusted threshold
 
         function getMediaMutedState(element) {
             if (!element) return true;
@@ -321,57 +292,41 @@
 
         function playMedia(element, shouldBeMuted) {
             if (!element) return;
-            console.log(`playMedia called for ${element.closest('.reel-item-wrapper')?.dataset.url}. Should be muted: ${shouldBeMuted}`);
 
             if (element.tagName === 'VIDEO') {
                 element.muted = shouldBeMuted;
-                // If user explicitly unmuted, override shouldBeMuted
                 if (element.dataset.userMuted === 'false') element.muted = false;
 
-                element.play().then(() => {
-                    console.log("HTML5 Video playing:", element.src, "Muted:", element.muted);
-                }).catch(e => console.warn("Autoplay failed for video:", element.src, e));
+                element.play().catch(e => {}); // Suppress minor autoplay errors in console
             } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
                 element.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
                 element.dataset.isPlaying = 'true';
                 
                 let finalMuteState = shouldBeMuted;
-                if (element.dataset.userMuted === 'false') { // User explicitly unmuted this video
-                    finalMuteState = false;
-                } else if (element.dataset.userMuted === 'true') { // User explicitly muted
-                    finalMuteState = true;
-                }
-                // else, it depends on 'shouldBeMuted' which is influenced by firstInteractionDone
+                if (element.dataset.userMuted === 'false') finalMuteState = false;
+                else if (element.dataset.userMuted === 'true') finalMuteState = true;
 
                 if (finalMuteState) {
-                    console.log("Sending MUTE to YouTube:", element.src);
                     element.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
                     element.dataset.isMuted = 'true';
                 } else {
-                     // Only attempt to unmute if firstInteractionDone or user explicitly unmuted
                     if (firstInteractionDone || element.dataset.userMuted === 'false') {
-                        console.log("Sending UNMUTE to YouTube:", element.src);
                         element.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
                         element.dataset.isMuted = 'false';
                     } else {
-                        // Still before first interaction and not explicitly unmuted by user, keep it muted
-                        console.log("Keeping YouTube Muted (pre-interaction or no explicit unmute):", element.src);
                         element.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
                         element.dataset.isMuted = 'true';
                     }
                 }
-                 console.log("YouTube video playing command sent. Target Muted:", element.dataset.isMuted);
             }
             updateMuteButtonForReel(element.closest('.reel-item-wrapper'));
         }
 
         function pauseMedia(element, shouldAlsoMute = true) {
             if (!element) return;
-            console.log(`pauseMedia called for ${element.closest('.reel-item-wrapper')?.dataset.url}. Should also mute: ${shouldAlsoMute}`);
 
             if (element.tagName === 'VIDEO') {
                 element.pause();
-                // Mute if shouldAlsoMute, unless user explicitly unmuted it
                 if (shouldAlsoMute && element.dataset.userMuted !== 'false') element.muted = true;
             } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
                 element.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
@@ -384,45 +339,11 @@
              updateMuteButtonForReel(element.closest('.reel-item-wrapper'));
         }
         
-        function togglePlayPause(mediaElement, reelContentDiv) {
-            const indicator = reelContentDiv.querySelector('.play-pause-indicator') || createPlayPauseIndicator(reelContentDiv);
-            if (!mediaElement) return;
-            firstInteractionDone = true; // Single tap is an interaction
+        // togglePlayPause function is removed
 
-            if (mediaElement.tagName === 'VIDEO') {
-                if (mediaElement.paused) {
-                    // Play, and if user hasn't explicitly muted it, play unmuted.
-                    playMedia(mediaElement, mediaElement.dataset.userMuted === 'true');
-                    indicator.textContent = '▶️';
-                } else {
-                    pauseMedia(mediaElement, false); // Don't force mute on user pause
-                    indicator.textContent = '⏸️';
-                }
-            } else if (mediaElement.tagName === 'IFRAME' && mediaElement.src.includes('youtube.com/embed')) {
-                const isPlaying = mediaElement.dataset.isPlaying === 'true';
-                if (isPlaying) {
-                    mediaElement.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                    mediaElement.dataset.isPlaying = 'false';
-                    indicator.textContent = '⏸️';
-                } else {
-                    mediaElement.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                    mediaElement.dataset.isPlaying = 'true';
-                    // If it was muted by system and user plays, try to unmute
-                    if (mediaElement.dataset.isMuted === 'true' && mediaElement.dataset.userMuted !== 'true') {
-                        mediaElement.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-                        mediaElement.dataset.isMuted = 'false';
-                    }
-                    indicator.textContent = '▶️';
-                }
-            }
-            indicator.classList.add('visible');
-            setTimeout(() => indicator.classList.remove('visible'), 500);
-            updateMuteButtonForReel(mediaElement.closest('.reel-item-wrapper'));
-        }
-
-        function toggleMuteState(mediaElement, buttonElement) {
+        function manualToggleMuteState(mediaElement, buttonElement) {
             if (!mediaElement) return;
-            firstInteractionDone = true; // Double tap is an interaction
+            firstInteractionDone = true; 
 
             let newMutedState;
             if (mediaElement.tagName === 'VIDEO') {
@@ -431,34 +352,28 @@
                 mediaElement.dataset.userMuted = newMutedState ? 'true' : 'false';
             } else if (mediaElement.tagName === 'IFRAME' && mediaElement.src.includes('youtube.com/embed')) {
                 const currentSystemMuteState = mediaElement.dataset.isMuted === 'true';
-                if (currentSystemMuteState) { // If system thinks it's muted, unmute it
+                if (currentSystemMuteState) {
                     mediaElement.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
                     newMutedState = false;
-                } else { // If system thinks it's unmuted, mute it
+                } else {
                     mediaElement.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
                     newMutedState = true;
                 }
                 mediaElement.dataset.isMuted = newMutedState ? 'true' : 'false';
-                mediaElement.dataset.userMuted = newMutedState ? 'true' : 'false'; // User's explicit choice
+                mediaElement.dataset.userMuted = newMutedState ? 'true' : 'false';
             }
 
             if (buttonElement) {
                 buttonElement.innerHTML = newMutedState ? '🔇' : '🔊';
             }
-            console.log(`Toggled mute for ${mediaElement.closest('.reel-item-wrapper')?.dataset.url}. New userMuted state: ${mediaElement.dataset.userMuted}`);
         }
         
-        function createPlayPauseIndicator(parent) { /* ... (same) ... */ 
-            const indicator = document.createElement('div');
-            indicator.className = 'play-pause-indicator';
-            parent.appendChild(indicator);
-            return indicator;
-        }
+        // createPlayPauseIndicator function is removed
 
         function createReelElement(reelData) {
             const reelWrapper = document.createElement('div');
             reelWrapper.className = 'reel-item-wrapper';
-            reelWrapper.dataset.url = reelData.url; // For debugging
+            reelWrapper.dataset.url = reelData.url;
 
             const reelContent = document.createElement('div');
             reelContent.className = 'reel-content';
@@ -466,16 +381,16 @@
             const loader = document.createElement('div');
             loader.className = 'loading-spinner';
             reelContent.appendChild(loader);
-            createPlayPauseIndicator(reelContent);
+            // Play/Pause indicator creation removed
 
             let mediaElement;
             const url = reelData.url;
 
             if (url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')) {
-                // ... IG embed ... (no change from previous)
-                 mediaElement = document.createElement('blockquote');
+                mediaElement = document.createElement('blockquote');
                 mediaElement.className = 'instagram-media';
-                mediaElement.setAttribute('data-instgrm-permalink', url);
+                // ... IG setup ...
+                 mediaElement.setAttribute('data-instgrm-permalink', url);
                 mediaElement.setAttribute('data-instgrm-captioned', 'false');
                 mediaElement.setAttribute('data-instgrm-version', '14');
                 mediaElement.style.margin = '0';
@@ -492,20 +407,13 @@
 
                 if (videoId) {
                     mediaElement = document.createElement('iframe');
-                    // Crucial: Start YouTube iframe with mute=1 in src.
-                    // The playMedia function will attempt to unmute it if firstInteractionDone is true
-                    // and user hasn't explicitly muted it.
                     mediaElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&enablejsapi=1&origin=${window.location.origin}&modestbranding=1`;
                     mediaElement.title = "YouTube Short";
                     mediaElement.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-                    mediaElement.dataset.isMuted = 'true'; // Reflects the initial mute=1 in src
+                    mediaElement.loading = "lazy"; // Lazy load iframes
+                    mediaElement.dataset.isMuted = 'true'; 
                     mediaElement.dataset.isPlaying = 'false';
-                    // userMuted will be set on user interaction
-                    mediaElement.onload = () => {
-                        loader.style.display = 'none';
-                        console.log("YouTube iframe loaded:", url);
-                        // If this is the first reel and becomes active, observer will handle play/unmute
-                    };
+                    mediaElement.onload = () => { loader.style.display = 'none'; };
                     mediaElement.onerror = () => { /* ... */ };
                     reelContent.appendChild(mediaElement);
                 } else { /* ... */ }
@@ -513,29 +421,18 @@
                 mediaElement = document.createElement('video');
                 mediaElement.src = url;
                 mediaElement.loop = true;
-                mediaElement.muted = true; // All videos start muted
+                mediaElement.muted = true;
                 mediaElement.playsInline = true;
                 mediaElement.setAttribute('webkit-playsinline', 'true');
-                mediaElement.dataset.userMuted = 'true'; // Reflects initial muted state
-                mediaElement.oncanplay = () => loader.style.display = 'none';
+                mediaElement.preload = "metadata"; // Preload only metadata
+                mediaElement.dataset.userMuted = 'true'; 
+                mediaElement.onloadedmetadata = () => loader.style.display = 'none'; // Hide loader once metadata is loaded
                 mediaElement.onerror = () => { /* ... */ };
                 reelContent.appendChild(mediaElement);
             } else { /* ... */ }
             
-            reelContent.addEventListener('click', (e) => {
-                if (e.target.closest('.reel-actions') || e.target.closest('.reel-info a')) return;
-                const currentTime = new Date().getTime();
-                const timeSinceLastTap = currentTime - lastTapTime;
-                const media = reelContent.querySelector('video, iframe');
-
-                if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-                    if (media) toggleMuteState(media, reelWrapper.querySelector('.mute-toggle-btn'));
-                    lastTapTime = 0; 
-                } else {
-                    if (media) togglePlayPause(media, reelContent);
-                    lastTapTime = currentTime;
-                }
-            });
+            // Click listener on reelContent for play/pause is REMOVED
+            // reelContent.addEventListener('click', ...); 
 
             const overlay = document.createElement('div'); /* ... overlay setup ... */
             overlay.className = 'reel-overlay';
@@ -553,12 +450,12 @@
             actionsDiv.className = 'reel-actions';
             const muteButton = document.createElement('button');
             muteButton.className = 'mute-toggle-btn';
-            muteButton.innerHTML = '🔇'; // All start muted
+            muteButton.innerHTML = '🔇'; 
             muteButton.title = 'Mute/Unmute';
             muteButton.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Still good practice for button clicks
                 const currentMedia = reelContent.querySelector('video, iframe');
-                if(currentMedia) toggleMuteState(currentMedia, muteButton);
+                if(currentMedia) manualToggleMuteState(currentMedia, muteButton);
             };
             actionsDiv.appendChild(muteButton);
             overlay.appendChild(actionsDiv);
@@ -572,7 +469,7 @@
         function displayReelsFromFirebase(reelsDataArray) { /* ... (same) ... */
             if (initialPlaceholder) initialPlaceholder.style.display = 'none';
             reelsFeed.innerHTML = ''; 
-            currentActiveReelWrapper = null; // Reset active reel
+            currentActiveReelWrapper = null;
 
             if (!reelsDataArray || reelsDataArray.length === 0) {
                 if (initialPlaceholder) {
@@ -588,11 +485,10 @@
                     reelsFeed.appendChild(reelElement);
                 }
             });
-             // IntersectionObserver will handle playing the first visible reel after display
         }
         
         function fetchReels() { /* ... (same) ... */
-            const reelsDBRef = database.ref('reels'); // Make sure this path is correct
+            const reelsDBRef = database.ref('reels');
             reelsDBRef.orderByChild('timestamp').on('value', (snapshot) => {
                 const data = snapshot.val();
                 const reelsArray = [];
@@ -600,16 +496,10 @@
                     Object.keys(data).forEach(key => {
                         reelsArray.push({ id: key, ...data[key] });
                     });
-                    reelsArray.reverse(); // Show newest first
+                    reelsArray.reverse();
                 }
                 displayReelsFromFirebase(reelsArray);
-            }, (error) => { 
-                console.error("Firebase read failed:", error);
-                if (initialPlaceholder) {
-                     initialPlaceholder.innerHTML = 'रील्स लोड करने में असमर्थ।';
-                     initialPlaceholder.style.display = 'flex';
-                }
-            });
+            }, (error) => { /* ... */ });
         }
 
         document.addEventListener('DOMContentLoaded', fetchReels);
