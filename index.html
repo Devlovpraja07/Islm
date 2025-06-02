@@ -1,94 +1,462 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Islamic Quotes Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>रील्स</title>
+    <style>
+        :root {
+            --reel-bg: #000;
+            --text-primary: #fff;
+            --text-secondary: #a8a8a8;
+            --icon-color: #fff;
+            --loader-color: #fff;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--reel-bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overscroll-behavior-y: contain;
+        }
+
+        .app-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .reels-feed {
+            flex-grow: 1;
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .reels-feed::-webkit-scrollbar { display: none; }
+        .reels-feed { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .reel-item-wrapper {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: var(--reel-bg);
+        }
+
+        .reel-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .reel-content iframe,
+        .reel-content video,
+        .reel-content .instagram-media {
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: cover;
+            background-color: #000;
+        }
+        .reel-content .instagram-media { margin: auto !important; }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top: 3px solid var(--loader-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .reel-overlay {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            padding: 15px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+            background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 30%);
+        }
+        
+        .reel-info { pointer-events: auto; max-width: calc(100% - 60px); }
+        .reel-user, .reel-description {
+            color: var(--text-primary);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+        .reel-user { font-weight: bold; font-size: 1rem; }
+
+        .reel-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            pointer-events: auto;
+            align-items: center;
+        }
+        .reel-actions button {
+            background-color: transparent;
+            color: var(--icon-color);
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s ease;
+            padding: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .reel-actions button:active { transform: scale(0.9); }
+
+        .app-header {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            padding: 10px 15px;
+            padding-top: calc(10px + env(safe-area-inset-top));
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--text-primary);
+            z-index: 10;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+        }
+        .app-header span { pointer-events: auto; }
+
+        .feed-placeholder {
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-  <div class="relative min-h-screen flex flex-col items-center justify-center bg-black bg-opacity-90">
-    <img alt="Background image" class="absolute inset-0 w-full h-full object-cover brightness-50" src="https://storage.googleapis.com/a1aa/image/419b9a1f-9b3e-4e30-9cc9-0227bb6d28d2.jpg"/>
-    <div class="relative z-10 flex flex-col items-center px-6 text-center text-white">
-      <div class="bg-green-700 rounded-full p-6 mb-4 flex items-center justify-center w-24 h-24">
-        <img alt="White mosque icon" class="w-12 h-12" src="https://storage.googleapis.com/a1aa/image/8e37bd2a-7dbc-4eca-4c72-387a8fa0e857.jpg"/>
-      </div>
-      <h1 class="text-2xl font-semibold mb-2">Islamic Quotes</h1>
-      <p class="text-sm mb-16 max-w-xs leading-tight">पाइये इस्लामिक पोस्टर्स अपनी फोटो के साथ</p>
-      <button id="google-login-btn" class="flex items-center justify-center bg-white rounded-full w-full max-w-md py-3 px-6 mb-6 shadow-md hover:shadow-lg transition-shadow" type="button">
-        <img alt="Google logo" class="w-6 h-6 mr-3" src="https://storage.googleapis.com/a1aa/image/3934dbcc-2c02-43fb-f9b4-a8113a50afff.jpg"/>
-        <span class="text-black font-semibold text-base">Google Log in</span>
-      </button>
-      <p class="text-xs text-white max-w-xs leading-snug">
-        By signing in I agree with
-        <a class="underline font-semibold" href="#">terms of services</a>
-        and
-        <a class="underline font-semibold" href="#">end user license agreement</a>
-      </p>
+
+    <div class="app-container">
+        <div class="app-header">
+            <span>रील्स</span>
+        </div>
+
+        <div class="reels-feed" id="reelsFeed">
+            <div class="feed-placeholder" id="initialPlaceholder">
+                रील्स लोड हो रहे हैं...
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
+    <!-- Instagram Embed Script -->
+    <script async src="//www.instagram.com/embed.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
-      authDomain: "rn-gfx-tool.firebaseapp.com",
-      databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "rn-gfx-tool",
-      storageBucket: "rn-gfx-tool.appspot.com",
-      messagingSenderId: "163149358541",
-      appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
-    };
+    <script>
+        // --- START Firebase Configuration ---
+        // Aapke diye gaye details se:
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Client[0].api_key[0].current_key
+            authDomain: "rn-gfx-tool.firebaseapp.com", // project_id.firebaseapp.com
+            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app", // project_info.firebase_url
+            projectId: "rn-gfx-tool", // project_info.project_id
+            storageBucket: "rn-gfx-tool.appspot.com", // project_id.appspot.com (ya storage_bucket se)
+            messagingSenderId: "163149358541", // project_info.project_number
+            // appId: "1:163149358541:web:YOUR_WEB_APP_ID" // Agar web app add kiya ho Firebase console mein
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        // --- END Firebase Configuration ---
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
+        const reelsFeed = document.getElementById('reelsFeed');
+        const initialPlaceholder = document.getElementById('initialPlaceholder');
 
-    // Google Sign-In
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
+        // --- Intersection Observer (same as before) ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const videoElement = entry.target.querySelector('video, iframe');
+                const reelItemWrapper = entry.target;
+                if (!videoElement) return;
 
-    document.getElementById('google-login-btn').addEventListener('click', function() {
-      auth.signInWithRedirect(googleProvider);
-    });
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                    document.querySelectorAll('.reel-item-wrapper').forEach(item => {
+                        if (item !== reelItemWrapper) {
+                            const otherVideo = item.querySelector('video, iframe');
+                            if (otherVideo) pauseMedia(otherVideo);
+                        }
+                    });
+                    playMedia(videoElement);
+                    reelItemWrapper.classList.add('is-active');
+                } else {
+                    pauseMedia(videoElement);
+                    reelItemWrapper.classList.remove('is-active');
+                }
+            });
+        }, { threshold: 0.6 });
 
-    // After redirect, get result
-    auth.getRedirectResult()
-      .then((result) => {
-        if (result.user) {
-          const user = result.user;
-
-          // Save user info to Firebase Database
-          database.ref('users/' + user.uid).set({
-            name: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL
-          });
-
-          // Save user info to LocalStorage
-          localStorage.setItem('userName', user.displayName);
-          localStorage.setItem('userEmail', user.email);
-          localStorage.setItem('userPhoto', user.photoURL);
-          localStorage.setItem('userUID', user.uid);
-
-          // Redirect to post.html
-          window.location.href = 'post.html';
+        function playMedia(element) { /* ... (same as previous version) ... */ 
+            if (element.tagName === 'VIDEO') {
+                element.play().catch(e => console.warn("Autoplay failed for video:", e));
+            } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
+                element.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            }
         }
-      })
-      .catch((error) => {
-        console.error('Error during sign-in:', error);
-      });
-  </script>
+        function pauseMedia(element) { /* ... (same as previous version) ... */ 
+            if (element.tagName === 'VIDEO') {
+                element.pause();
+            } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
+                element.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            }
+        }
+        function toggleMute(videoElement, buttonElement) { /* ... (same as previous version) ... */ 
+            if (videoElement.tagName === 'VIDEO') {
+                videoElement.muted = !videoElement.muted;
+                buttonElement.innerHTML = videoElement.muted ? '🔇' : '🔊';
+            } else if (videoElement.tagName === 'IFRAME' && videoElement.src.includes('youtube.com/embed')) {
+                const isMuted = videoElement.dataset.muted === 'true';
+                if (isMuted) {
+                    videoElement.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                    videoElement.dataset.muted = 'false';
+                    buttonElement.innerHTML = '🔊';
+                } else {
+                    videoElement.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+                    videoElement.dataset.muted = 'true';
+                    buttonElement.innerHTML = '🔇';
+                }
+            }
+        }
+
+        function createReelElement(reelData) { /* ... (same as previous version, ensure reelData has url, user, description) ... */ 
+            const reelWrapper = document.createElement('div');
+            reelWrapper.className = 'reel-item-wrapper';
+            reelWrapper.dataset.url = reelData.url;
+
+            const reelContent = document.createElement('div');
+            reelContent.className = 'reel-content';
+
+            const loader = document.createElement('div');
+            loader.className = 'loading-spinner';
+            reelContent.appendChild(loader);
+
+            let mediaElement;
+            const url = reelData.url;
+
+            if (url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')) {
+                mediaElement = document.createElement('blockquote');
+                mediaElement.className = 'instagram-media';
+                mediaElement.setAttribute('data-instgrm-permalink', url);
+                mediaElement.setAttribute('data-instgrm-captioned', 'false');
+                mediaElement.setAttribute('data-instgrm-version', '14');
+                mediaElement.style.margin = '0';
+                mediaElement.style.boxSizing = 'border-box';
+
+                const tempDiv = document.createElement('div');
+                mediaElement.appendChild(tempDiv);
+                
+                reelContent.appendChild(mediaElement);
+                if (window.instgrm) {
+                    window.instgrm.Embeds.process();
+                }
+                setTimeout(() => loader.style.display = 'none', 1000);
+
+
+            } else if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/')) {
+                let videoId = '';
+                if (url.includes('youtube.com/shorts/')) {
+                    videoId = url.split('/shorts/')[1].split('?')[0].split('&')[0];
+                } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
+                }
+
+                if (videoId) {
+                    mediaElement = document.createElement('iframe');
+                    mediaElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&enablejsapi=1&origin=${window.location.origin}`;
+                    mediaElement.title = "YouTube Short";
+                    mediaElement.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                    mediaElement.allowFullscreen = true;
+                    mediaElement.dataset.muted = 'true';
+
+                    mediaElement.onload = () => loader.style.display = 'none';
+                    mediaElement.onerror = () => {
+                        loader.style.display = 'none';
+                        reelContent.innerHTML = '<p style="color: #ccc; padding: 20px;">वीडियो लोड नहीं हो सका।</p>';
+                    };
+                    reelContent.appendChild(mediaElement);
+                } else {
+                    loader.style.display = 'none';
+                    reelContent.innerHTML = '<p style="color: #ccc; padding: 20px;">अमान्य यूट्यूब URL।</p>';
+                }
+            } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                mediaElement = document.createElement('video');
+                mediaElement.src = url;
+                mediaElement.loop = true;
+                mediaElement.muted = true;
+                mediaElement.playsInline = true;
+                mediaElement.setAttribute('webkit-playsinline', 'true');
+
+                mediaElement.oncanplay = () => loader.style.display = 'none';
+                mediaElement.onerror = () => {
+                     loader.style.display = 'none';
+                     reelContent.innerHTML = '<p style="color: #ccc; padding: 20px;">वीडियो लोड नहीं हो सका।</p>';
+                };
+                reelContent.appendChild(mediaElement);
+            } else {
+                loader.style.display = 'none';
+                reelContent.innerHTML = `<p style="color: #ccc; padding: 20px;">URL समर्थित नहीं: ${url.substring(0,30)}...</p>`;
+                return reelWrapper;
+            }
+
+            reelContent.addEventListener('click', (e) => {
+                if (e.target === reelContent || e.target.tagName === 'VIDEO') {
+                    const video = reelContent.querySelector('video');
+                    if (video) {
+                        if (video.paused) { video.play(); } else { video.pause(); }
+                    }
+                }
+            });
+
+            const overlay = document.createElement('div');
+            overlay.className = 'reel-overlay';
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'reel-info';
+            if (reelData.user) {
+                const userP = document.createElement('p');
+                userP.className = 'reel-user';
+                userP.textContent = reelData.user;
+                infoDiv.appendChild(userP);
+            }
+            if (reelData.description) {
+                const descP = document.createElement('p');
+                descP.className = 'reel-description';
+                descP.textContent = reelData.description.substring(0,100) + (reelData.description.length > 100 ? '...' : '');
+                infoDiv.appendChild(descP);
+            }
+            overlay.appendChild(infoDiv);
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'reel-actions';
+            const muteButton = document.createElement('button');
+            muteButton.className = 'mute-toggle-btn';
+            muteButton.innerHTML = '🔇';
+            muteButton.title = 'Mute/Unmute';
+            muteButton.onclick = (e) => {
+                e.stopPropagation();
+                const currentMedia = reelContent.querySelector('video, iframe');
+                if(currentMedia) toggleMute(currentMedia, muteButton);
+            };
+            actionsDiv.appendChild(muteButton);
+            overlay.appendChild(actionsDiv);
+            reelContent.appendChild(overlay);
+
+            reelWrapper.appendChild(reelContent);
+            observer.observe(reelWrapper);
+            return reelWrapper;
+        }
+
+        function displayReelsFromFirebase(reelsDataArray) {
+            if (initialPlaceholder) initialPlaceholder.style.display = 'none';
+            reelsFeed.innerHTML = ''; // Clear existing reels
+
+            if (!reelsDataArray || reelsDataArray.length === 0) {
+                if (initialPlaceholder) {
+                     initialPlaceholder.innerHTML = 'कोई रील्स उपलब्ध नहीं हैं।';
+                     initialPlaceholder.style.display = 'flex';
+                }
+                return;
+            }
+            
+            reelsDataArray.forEach(reelData => {
+                // Ensure reelData has the necessary fields (url, user, description)
+                if (reelData && reelData.url) {
+                    const reelElement = createReelElement(reelData);
+                    reelsFeed.appendChild(reelElement);
+                }
+            });
+
+            // Autoplay first reel if visible
+            setTimeout(() => {
+                const firstReel = reelsFeed.querySelector('.reel-item-wrapper');
+                if (firstReel) {
+                    const firstVideo = firstReel.querySelector('video, iframe');
+                    if (firstVideo) {
+                        const rect = firstReel.getBoundingClientRect();
+                        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+                           playMedia(firstVideo);
+                           firstReel.classList.add('is-active');
+                        }
+                    }
+                }
+            }, 200);
+        }
+        
+        function fetchReels() {
+            const reelsRef = database.ref('reels'); // 'reels' is the node in your DB
+            reelsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const reelsArray = [];
+                if (data) {
+                    // Firebase returns an object, convert to array
+                    // And also sort by timestamp if you add one, to show newest first
+                    Object.keys(data).forEach(key => {
+                        reelsArray.push({ id: key, ...data[key] });
+                    });
+                     // Example: Sort by a 'timestamp' field in descending order (newest first)
+                     // reelsArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                }
+                displayReelsFromFirebase(reelsArray);
+            }, (error) => {
+                console.error("Firebase read failed: " + error.code);
+                if (initialPlaceholder) {
+                     initialPlaceholder.innerHTML = 'रील्स लोड करने में असमर्थ। कृपया पुनः प्रयास करें।';
+                     initialPlaceholder.style.display = 'flex';
+                }
+            });
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', fetchReels);
+
+    </script>
 </body>
 </html>
