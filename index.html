@@ -1,508 +1,226 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>रील्स</title>
-    <style>
-        /* CSS pehle jaisa hi rahega, koi badlav nahi */
-        :root {
-            --reel-bg: #000;
-            --text-primary: #fff;
-            --text-secondary: #a8a8a8;
-            --icon-color: #fff;
-            --loader-color: #fff;
-            --overlay-button-bg: rgba(0, 0, 0, 0.3);
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background-color: var(--reel-bg);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overscroll-behavior-y: contain;
-        }
-
-        .app-container {
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .reels-feed {
-            flex-grow: 1;
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        .reels-feed::-webkit-scrollbar { display: none; }
-        .reels-feed { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .reel-item-wrapper {
-            width: 100%;
-            height: 100vh;
-            scroll-snap-align: start;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background-color: var(--reel-bg);
-        }
-
-        .reel-content {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            /* cursor: pointer; <-- Removed as tap to play/pause is gone */
-        }
-
-        .reel-content iframe,
-        .reel-content video,
-        .reel-content .instagram-media {
-            width: 100%;
-            height: 100%;
-            border: none;
-            object-fit: cover;
-            background-color: #000;
-            /* pointer-events: none; <-- Not strictly needed if no tap on content */
-        }
-        /* IG needs pointer events for its own controls */
-        .reel-content .instagram-media { pointer-events: auto; }
-
-
-        .loading-spinner {
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top: 3px solid var(--loader-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 0.8s linear infinite;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-        }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        .reel-overlay {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%;
-            padding: 15px;
-            padding-bottom: calc(15px + env(safe-area-inset-bottom));
-            box-sizing: border-box;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            pointer-events: none;
-            background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 40%);
-        }
-        
-        .reel-info { pointer-events: auto; max-width: calc(100% - 70px); }
-        .reel-user, .reel-description {
-            color: var(--text-primary);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            word-break: break-word;
-        }
-        .reel-user { font-weight: bold; font-size: 1rem; }
-
-        .reel-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            pointer-events: auto;
-            align-items: center;
-            padding-right: 5px;
-        }
-        .reel-actions button {
-            background-color: var(--overlay-button-bg);
-            color: var(--icon-color);
-            border: none;
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            font-size: 1.4rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            padding: 0;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        .reel-actions button:active { transform: scale(0.92); }
-
-        .app-header {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            padding: 10px 15px;
-            padding-top: calc(10px + env(safe-area-inset-top));
-            box-sizing: border-box;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--text-primary);
-            z-index: 100;
-            pointer-events: none;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
-        }
-        .app-header span { pointer-events: auto; }
-
-        .feed-placeholder {
-            width: 100%; height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        /* Play/Pause indicator is no longer needed as tap to play/pause is removed */
-        /* .play-pause-indicator { ... } */
-
-    </style>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Book Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-image: url('https://images.unsplash.com/photo-1617957681478-7e5f0a277d51?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+    }
+    main {
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 1rem 0;
+    }
+    .nav-item {
+      transition: color 0.3s;
+    }
+    .nav-item:hover {
+      color: #3b82f6;
+    }
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 90%;
+      width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      animation: spin 1s ease-in-out;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+      100% { transform: rotate(360deg) scale(1); opacity: 1; }
+    }
+    .popup iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .popup button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .visit-btn {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      margin-right: 10px;
+    }
+    .close-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+    }
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #3b82f6;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      display: none;
+      z-index: 1100;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-transparent text-gray-800">
+  <!-- Toast -->
+  <div id="toast" class="toast">Please visit and start home</div>
 
-    <div class="app-container">
-        <div class="app-header">
-            <span>रील्स</span>
-        </div>
-
-        <div class="reels-feed" id="reelsFeed">
-            <div class="feed-placeholder" id="initialPlaceholder">
-                रील्स लोड हो रहे हैं...
-            </div>
-        </div>
+  <!-- Popup -->
+  <div id="popupOverlay" class="popup-overlay flex">
+    <div class="popup">
+      <iframe
+        src="https://spin-and-win.securetools.in/rewardall.php?id=6367172066"
+        title="Reward"
+        allow="camera; microphone; geolocation"
+        allowfullscreen
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      <div class="mt-4">
+        <button id="visitBtn" class="visit-btn">Visit</button>
+        <button id="closeBtn" class="close-btn">Close</button>
+      </div>
     </div>
+  </div>
 
-    <script async src="//www.instagram.com/embed.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <!-- Header -->
+  <header class="flex items-center justify-between p-4">
+    <div class="flex items-center space-x-2">
+      <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+        <i class="fas fa-user text-white text-xl"></i>
+      </div>
+      <span class="text-black text-base font-normal">John</span>
+    </div>
+    <div class="flex items-center space-x-6 text-black text-2xl">
+      <i class="fas fa-globe"></i>
+      <i class="fas fa-search"></i>
+    </div>
+  </header>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Replace
-            authDomain: "rn-gfx-tool.firebaseapp.com", // Replace
-            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app", // Replace
-            projectId: "rn-gfx-tool", // Replace
-            storageBucket: "rn-gfx-tool.appspot.com", // Replace
-            messagingSenderId: "163149358541", // Replace
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+  <!-- Main Content -->
+  <main class="p-4 grid grid-cols-2 gap-4 max-w-md mx-auto">
+    <div class="rounded-md overflow-hidden">
+      <img alt="The Jungle Book" class="w-full h-auto object-cover rounded-md" src="https://storage.googleapis.com/a1aa/image/857799d9-b869-4a4d-90ea-3eac8ef84743.jpg" />
+    </div>
+    <div class="rounded-md overflow-hidden">
+      <img alt="Angry Like Me" class="w-full h-auto object-cover rounded-md" src="https://storage.googleapis.com/a1aa/image/f4d3518c-0dd4-45b1-34e0-0395ca6a7491.jpg" />
+    </div>
+    <div class="rounded-md overflow-hidden">
+      <img alt="Jealous Like Me" class="w-full h-auto object-cover rounded-md" src="https://storage.googleapis.com/a1aa/image/ef049732-6965-4f33-076f-deb1af656830.jpg" />
+    </div>
+    <div class="rounded-md overflow-hidden">
+      <img alt="King Arthur's First Quest" class="w-full h-auto object-cover rounded-md" src="https://storage.googleapis.com/a1aa/image/0a980814-b6ea-45f1-cc2e-0c209b2c5517.jpg" />
+    </div>
+  </main>
 
-        const reelsFeed = document.getElementById('reelsFeed');
-        const initialPlaceholder = document.getElementById('initialPlaceholder');
-        let currentActiveReelWrapper = null;
-        let firstInteractionDone = false;
+  <!-- Footer -->
+  <footer class="flex justify-around items-center text-white">
+    <a href="#" class="nav-item"><i class="fas fa-home text-2xl"></i><span class="block text-sm">Home</span></a>
+    <a href="#" class="nav-item"><i class="fas fa-book text-2xl"></i><span class="block text-sm">Books</span></a>
+    <a href="#" class="nav-item"><i class="fas fa-heart text-2xl"></i><span class="block text-sm">Favorites</span></a>
+    <a href="#" class="nav-item"><i class="fas fa-user text-2xl"></i><span class="block text-sm">Profile</span></a>
+  </footer>
 
-        function handleFirstInteraction() {
-            if (!firstInteractionDone) {
-                // console.log("First user interaction detected.");
-                firstInteractionDone = true;
-                if (currentActiveReelWrapper) {
-                    const media = currentActiveReelWrapper.querySelector('video, iframe');
-                    if (media) {
-                        playMedia(media, false); // Attempt to play unmuted
-                    }
-                }
-                document.body.removeEventListener('click', handleFirstInteraction, { capture: true, once: true });
-                document.body.removeEventListener('touchstart', handleFirstInteraction, { capture: true, once: true });
-            }
-        }
-        document.body.addEventListener('click', handleFirstInteraction, { capture: true, once: true });
-        document.body.addEventListener('touchstart', handleFirstInteraction, { capture: true, once: true });
+  <!-- JavaScript -->
+  <script>
+    const popupOverlay = document.getElementById('popupOverlay');
+    const visitBtn = document.getElementById('visitBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const toast = document.getElementById('toast');
+    const visitUrl = "https://spin-and-win.securetools.in/rewardall.php?id=6367172066";
 
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const reelWrapper = entry.target;
-                const mediaElement = reelWrapper.querySelector('video, iframe');
+    function hasVisitedToday() {
+      const storedDate = localStorage.getItem('popupShownDate');
+      const today = new Date().toISOString().split('T')[0];
+      return storedDate === today;
+    }
 
-                if (!mediaElement) return;
+    function markVisitedToday() {
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('popupShownDate', today);
+    }
 
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.75) { // Slightly higher threshold
-                    if (currentActiveReelWrapper && currentActiveReelWrapper !== reelWrapper) {
-                        pauseMedia(currentActiveReelWrapper.querySelector('video, iframe'), true);
-                    }
-                    
-                    let initialMute = true; 
-                    if (firstInteractionDone) {
-                        if (mediaElement.dataset.userMuted === 'false') initialMute = false;
-                        else if (mediaElement.dataset.userMuted === 'true') initialMute = true;
-                        else initialMute = false; 
-                    }
-                    if(mediaElement.tagName === 'IFRAME' && !firstInteractionDone && mediaElement.dataset.userMuted !== 'false'){
-                        initialMute = true; 
-                    }
-                    playMedia(mediaElement, initialMute); 
-                    
-                    currentActiveReelWrapper = reelWrapper;
-                    reelWrapper.classList.add('is-active');
-                    updateMuteButtonForReel(reelWrapper);
-                } else {
-                    pauseMedia(mediaElement, true);
-                    reelWrapper.classList.remove('is-active');
-                    if (currentActiveReelWrapper === reelWrapper) {
-                        currentActiveReelWrapper = null;
-                    }
-                }
-            });
-        }, { threshold: 0.75 }); // Adjusted threshold
+    function requestPermissions() {
+      // Request Location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(() => {}, () => {});
+      }
 
-        function getMediaMutedState(element) {
-            if (!element) return true;
-            if (element.tagName === 'VIDEO') return element.muted;
-            if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
-                return element.dataset.isMuted === 'true';
-            }
-            return true;
-        }
-        
-        function updateMuteButtonForReel(reelWrapper) {
-            if (!reelWrapper) return;
-            const mediaElement = reelWrapper.querySelector('video, iframe');
-            const muteButton = reelWrapper.querySelector('.mute-toggle-btn');
-            if (mediaElement && muteButton) {
-                muteButton.innerHTML = getMediaMutedState(mediaElement) ? '🔇' : '🔊';
-            }
-        }
+      // Request Camera and Microphone
+      navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+        .then(() => {
+          console.log("Camera/Mic access granted");
+        })
+        .catch(() => {
+          console.log("Camera/Mic access denied");
+        });
+    }
 
-        function playMedia(element, shouldBeMuted) {
-            if (!element) return;
+    document.addEventListener('DOMContentLoaded', function () {
+      requestPermissions();
 
-            if (element.tagName === 'VIDEO') {
-                element.muted = shouldBeMuted;
-                if (element.dataset.userMuted === 'false') element.muted = false;
+      if (!hasVisitedToday()) {
+        popupOverlay.style.display = 'flex';
+        visitBtn.style.display = 'inline-block';
+        closeBtn.style.display = 'none';
+        showToast('Please visit and start home');
+      } else {
+        popupOverlay.style.display = 'none';
+      }
 
-                element.play().catch(e => {}); // Suppress minor autoplay errors in console
-            } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
-                element.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                element.dataset.isPlaying = 'true';
-                
-                let finalMuteState = shouldBeMuted;
-                if (element.dataset.userMuted === 'false') finalMuteState = false;
-                else if (element.dataset.userMuted === 'true') finalMuteState = true;
+      visitBtn.addEventListener('click', function () {
+        window.open(visitUrl, '_blank');
+        markVisitedToday();
+        visitBtn.style.display = 'none';
+        closeBtn.style.display = 'inline-block';
+        showToast('Visited. You may now close.');
+      });
 
-                if (finalMuteState) {
-                    element.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
-                    element.dataset.isMuted = 'true';
-                } else {
-                    if (firstInteractionDone || element.dataset.userMuted === 'false') {
-                        element.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-                        element.dataset.isMuted = 'false';
-                    } else {
-                        element.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
-                        element.dataset.isMuted = 'true';
-                    }
-                }
-            }
-            updateMuteButtonForReel(element.closest('.reel-item-wrapper'));
-        }
-
-        function pauseMedia(element, shouldAlsoMute = true) {
-            if (!element) return;
-
-            if (element.tagName === 'VIDEO') {
-                element.pause();
-                if (shouldAlsoMute && element.dataset.userMuted !== 'false') element.muted = true;
-            } else if (element.tagName === 'IFRAME' && element.src.includes('youtube.com/embed')) {
-                element.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                element.dataset.isPlaying = 'false';
-                if (shouldAlsoMute && element.dataset.userMuted !== 'false') {
-                    element.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
-                    element.dataset.isMuted = 'true';
-                }
-            }
-             updateMuteButtonForReel(element.closest('.reel-item-wrapper'));
-        }
-        
-        // togglePlayPause function is removed
-
-        function manualToggleMuteState(mediaElement, buttonElement) {
-            if (!mediaElement) return;
-            firstInteractionDone = true; 
-
-            let newMutedState;
-            if (mediaElement.tagName === 'VIDEO') {
-                mediaElement.muted = !mediaElement.muted;
-                newMutedState = mediaElement.muted;
-                mediaElement.dataset.userMuted = newMutedState ? 'true' : 'false';
-            } else if (mediaElement.tagName === 'IFRAME' && mediaElement.src.includes('youtube.com/embed')) {
-                const currentSystemMuteState = mediaElement.dataset.isMuted === 'true';
-                if (currentSystemMuteState) {
-                    mediaElement.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-                    newMutedState = false;
-                } else {
-                    mediaElement.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
-                    newMutedState = true;
-                }
-                mediaElement.dataset.isMuted = newMutedState ? 'true' : 'false';
-                mediaElement.dataset.userMuted = newMutedState ? 'true' : 'false';
-            }
-
-            if (buttonElement) {
-                buttonElement.innerHTML = newMutedState ? '🔇' : '🔊';
-            }
-        }
-        
-        // createPlayPauseIndicator function is removed
-
-        function createReelElement(reelData) {
-            const reelWrapper = document.createElement('div');
-            reelWrapper.className = 'reel-item-wrapper';
-            reelWrapper.dataset.url = reelData.url;
-
-            const reelContent = document.createElement('div');
-            reelContent.className = 'reel-content';
-
-            const loader = document.createElement('div');
-            loader.className = 'loading-spinner';
-            reelContent.appendChild(loader);
-            // Play/Pause indicator creation removed
-
-            let mediaElement;
-            const url = reelData.url;
-
-            if (url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')) {
-                mediaElement = document.createElement('blockquote');
-                mediaElement.className = 'instagram-media';
-                // ... IG setup ...
-                 mediaElement.setAttribute('data-instgrm-permalink', url);
-                mediaElement.setAttribute('data-instgrm-captioned', 'false');
-                mediaElement.setAttribute('data-instgrm-version', '14');
-                mediaElement.style.margin = '0';
-                mediaElement.style.boxSizing = 'border-box';
-                const tempDiv = document.createElement('div');
-                mediaElement.appendChild(tempDiv);
-                reelContent.appendChild(mediaElement);
-                if (window.instgrm) window.instgrm.Embeds.process();
-                setTimeout(() => loader.style.display = 'none', 1500);
-            } else if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/')) {
-                let videoId = '';
-                if (url.includes('youtube.com/shorts/')) videoId = url.split('/shorts/')[1].split('?')[0].split('&')[0];
-                else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
-
-                if (videoId) {
-                    mediaElement = document.createElement('iframe');
-                    mediaElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&enablejsapi=1&origin=${window.location.origin}&modestbranding=1`;
-                    mediaElement.title = "YouTube Short";
-                    mediaElement.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-                    mediaElement.loading = "lazy"; // Lazy load iframes
-                    mediaElement.dataset.isMuted = 'true'; 
-                    mediaElement.dataset.isPlaying = 'false';
-                    mediaElement.onload = () => { loader.style.display = 'none'; };
-                    mediaElement.onerror = () => { /* ... */ };
-                    reelContent.appendChild(mediaElement);
-                } else { /* ... */ }
-            } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
-                mediaElement = document.createElement('video');
-                mediaElement.src = url;
-                mediaElement.loop = true;
-                mediaElement.muted = true;
-                mediaElement.playsInline = true;
-                mediaElement.setAttribute('webkit-playsinline', 'true');
-                mediaElement.preload = "metadata"; // Preload only metadata
-                mediaElement.dataset.userMuted = 'true'; 
-                mediaElement.onloadedmetadata = () => loader.style.display = 'none'; // Hide loader once metadata is loaded
-                mediaElement.onerror = () => { /* ... */ };
-                reelContent.appendChild(mediaElement);
-            } else { /* ... */ }
-            
-            // Click listener on reelContent for play/pause is REMOVED
-            // reelContent.addEventListener('click', ...); 
-
-            const overlay = document.createElement('div'); /* ... overlay setup ... */
-            overlay.className = 'reel-overlay';
-            const infoDiv = document.createElement('div'); 
-            infoDiv.className = 'reel-info';
-            if (reelData.user) { 
-                const userP = document.createElement('p'); userP.className = 'reel-user'; userP.textContent = reelData.user; infoDiv.appendChild(userP);
-            }
-            if (reelData.description) {
-                const descP = document.createElement('p'); descP.className = 'reel-description'; descP.textContent = reelData.description.substring(0,100) + (reelData.description.length > 100 ? '...' : ''); infoDiv.appendChild(descP);
-            }
-            overlay.appendChild(infoDiv);
-            
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'reel-actions';
-            const muteButton = document.createElement('button');
-            muteButton.className = 'mute-toggle-btn';
-            muteButton.innerHTML = '🔇'; 
-            muteButton.title = 'Mute/Unmute';
-            muteButton.onclick = (e) => {
-                e.stopPropagation(); // Still good practice for button clicks
-                const currentMedia = reelContent.querySelector('video, iframe');
-                if(currentMedia) manualToggleMuteState(currentMedia, muteButton);
-            };
-            actionsDiv.appendChild(muteButton);
-            overlay.appendChild(actionsDiv);
-            reelContent.appendChild(overlay);
-            
-            reelWrapper.appendChild(reelContent);
-            observer.observe(reelWrapper);
-            return reelWrapper;
-        }
-
-        function displayReelsFromFirebase(reelsDataArray) { /* ... (same) ... */
-            if (initialPlaceholder) initialPlaceholder.style.display = 'none';
-            reelsFeed.innerHTML = ''; 
-            currentActiveReelWrapper = null;
-
-            if (!reelsDataArray || reelsDataArray.length === 0) {
-                if (initialPlaceholder) {
-                     initialPlaceholder.innerHTML = 'कोई रील्स उपलब्ध नहीं हैं।';
-                     initialPlaceholder.style.display = 'flex';
-                }
-                return;
-            }
-            
-            reelsDataArray.forEach(reelData => {
-                if (reelData && reelData.url) {
-                    const reelElement = createReelElement(reelData);
-                    reelsFeed.appendChild(reelElement);
-                }
-            });
-        }
-        
-        function fetchReels() { /* ... (same) ... */
-            const reelsDBRef = database.ref('reels');
-            reelsDBRef.orderByChild('timestamp').on('value', (snapshot) => {
-                const data = snapshot.val();
-                const reelsArray = [];
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        reelsArray.push({ id: key, ...data[key] });
-                    });
-                    reelsArray.reverse();
-                }
-                displayReelsFromFirebase(reelsArray);
-            }, (error) => { /* ... */ });
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchReels);
-    </script>
+      closeBtn.addEventListener('click', function () {
+        popupOverlay.style.display = 'none';
+      });
+    });
+  </script>
 </body>
 </html>
