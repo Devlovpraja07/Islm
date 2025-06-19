@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Wallet - UC Earn App</title>
+    <title>Withdrawal - UC Earn App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Adsterra Ad Script -->
     <script async src="https://ads.adsterra.com/serve/AhJ1bXBzLWFkLTIwMjQtMDEvOTQ5MDQ2"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* Wallet Page Styles */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #1a2a44, #2c3e50, #34495e);
@@ -42,7 +40,7 @@
 
         header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             padding: 15px;
             background: var(--header-bg);
@@ -77,15 +75,6 @@
             transition: background 0.3s ease;
         }
 
-        .btn-accent {
-            background: var(--secondary);
-            color: var(--light);
-        }
-
-        .btn-accent:hover {
-            background: #c0392b;
-        }
-
         .btn-primary {
             background: var(--primary);
             color: var(--light);
@@ -104,63 +93,29 @@
             background: #95a5a6;
         }
 
-        .wallet-content {
+        .withdrawal-content {
             padding: 20px;
             text-align: center;
             max-width: 500px;
             margin: 0 auto;
         }
 
-        .wallet-balance {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .wallet-balance i {
-            font-size: 40px;
-            color: var(--secondary);
-            margin-bottom: 10px;
-        }
-
-        .wallet-balance h2 {
-            font-size: 20px;
-            color: var(--light);
-            margin-bottom: 5px;
-        }
-
-        .wallet-balance p {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 0;
-        }
-
-        .withdrawal-section {
+        .verification-section, .withdrawal-form {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            display: none;
         }
 
-        .withdrawal-section h3 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--light);
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .withdrawal-form {
-            text-align: left;
-            margin-top: 15px;
+        .verification-section.active, .withdrawal-form.active {
+            display: block;
         }
 
         .form-group {
             margin-bottom: 15px;
+            text-align: left;
         }
 
         .form-group label {
@@ -170,7 +125,7 @@
             margin-bottom: 5px;
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
             border-radius: 8px;
@@ -180,9 +135,23 @@
             font-size: 14px;
         }
 
-        #withdrawalMessage {
+        .coin-balance {
             margin-top: 10px;
-            font-size: 14px;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        #toast {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
         }
 
         footer {
@@ -193,32 +162,16 @@
             margin-top: 20px;
         }
 
-        #loginPrompt {
-            display: none;
-            color: red;
-            text-align: center;
-            margin-top: 20px;
-        }
-
         @media (max-width: 768px) {
-            .wallet-balance {
-                padding: 20px;
+            .verification-section, .withdrawal-form {
+                padding: 15px;
             }
-            .wallet-balance i {
-                font-size: 30px;
-            }
-            .wallet-balance h2 {
-                font-size: 18px;
-            }
-            .wallet-balance p {
-                font-size: 24px;
-            }
-            .withdrawal-section h3 {
-                font-size: 16px;
-            }
-            .form-group input {
+            .form-group input, .form-group select {
                 font-size: 12px;
                 padding: 8px;
+            }
+            .coin-balance {
+                font-size: 14px;
             }
         }
 
@@ -232,21 +185,18 @@
             .logo h1 {
                 font-size: 18px;
             }
-            .wallet-balance {
-                padding: 15px;
+            .verification-section, .withdrawal-form {
+                padding: 10px;
             }
-            .wallet-balance p {
-                font-size: 20px;
-            }
-            .withdrawal-section {
-                padding: 15px;
-            }
-            .form-group input {
+            .form-group input, .form-group select {
                 font-size: 12px;
                 padding: 6px;
             }
             .btn {
                 padding: 8px 15px;
+                font-size: 12px;
+            }
+            .coin-balance {
                 font-size: 12px;
             }
         }
@@ -260,43 +210,49 @@
     <div class="container">
         <header>
             <div class="logo">
-                <i class="fas fa-wallet"></i>
-                <h1>Wallet</h1>
+                <i class="fas fa-rupee-sign"></i>
+                <h1>Withdrawal</h1>
             </div>
-            <button class="btn btn-accent" id="backBtn">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
         </header>
 
-        <div class="wallet-content">
-            <div class="wallet-balance">
-                <i class="fas fa-coins"></i>
-                <h2>Your Balance</h2>
-                <p id="coinBalance">0 Coins</p>
+        <div class="withdrawal-content">
+            <div class="verification-section active" id="verificationSection">
+                <h3><i class="fas fa-user-check"></i> Verify Your Identity</h3>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                </div>
+                <button class="btn btn-primary" id="verifyBtn">
+                    <i class="fas fa-check"></i> Verify
+                </button>
+                <p id="verificationMessage"></p>
             </div>
 
-            <div class="withdrawal-section">
-                <h3><i class="fas fa-rupee-sign"></i> Withdrawal</h3>
-                <div class="withdrawal-form" id="withdrawalForm" style="display: none;">
-                    <div class="form-group">
-                        <label for="upiId">UPI ID</label>
-                        <input type="text" id="upiId" placeholder="Enter your UPI ID (e.g., user@bank)">
-                    </div>
-                    <div class="form-group">
-                        <label for="withdrawAmount">Amount (Coins)</label>
-                        <input type="number" id="withdrawAmount" placeholder="Enter amount to withdraw" min="50">
-                    </div>
-                    <button class="btn btn-primary" id="submitWithdrawal">
-                        <i class="fas fa-paper-plane"></i> Submit Request
-                    </button>
-                    <p id="withdrawalMessage"></p>
+            <div class="withdrawal-form" id="withdrawalForm">
+                <h3><i class="fas fa-download"></i> Withdrawal Request</h3>
+                <div class="form-group">
+                    <label for="upiId">UPI ID</label>
+                    <input type="text" id="upiId" placeholder="Enter your UPI ID (e.g., user@bank)">
                 </div>
-                <button class="btn btn-secondary" id="showWithdrawalForm">
-                    <i class="fas fa-download"></i> Request Withdrawal
+                <div class="form-group">
+                    <label for="withdrawAmount">Withdrawal Amount</label>
+                    <select id="withdrawAmount">
+                        <option value="">Select Amount</option>
+                        <option value="100">100 Coins = 1 INR</option>
+                        <option value="500">500 Coins = 5 INR</option>
+                        <option value="1000">1000 Coins = 10 INR</option>
+                        <option value="2000">2000 Coins = 20 INR</option>
+                    </select>
+                </div>
+                <div class="coin-balance" id="coinBalance">Balance: 0</div>
+                <button class="btn btn-primary" id="submitWithdrawal">
+                    <i class="fas fa-paper-plane"></i> Submit Request
                 </button>
+                <p id="withdrawalMessage"></p>
             </div>
-            <div id="loginPrompt">Please log in through the app to view your balance.</div>
         </div>
+
+        <div id="toast">Success!</div>
 
         <footer>
             <p>© 2025 UC Earn App. All rights reserved.</p>
@@ -318,57 +274,60 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const database = firebase.database();
 
         const loadingOverlay = document.getElementById('loading');
-        const coinBalance = document.getElementById('coinBalance');
-        const showWithdrawalForm = document.getElementById('showWithdrawalForm');
+        const verificationSection = document.getElementById('verificationSection');
         const withdrawalForm = document.getElementById('withdrawalForm');
+        const username = document.getElementById('username');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const verificationMessage = document.getElementById('verificationMessage');
         const upiId = document.getElementById('upiId');
         const withdrawAmount = document.getElementById('withdrawAmount');
         const submitWithdrawal = document.getElementById('submitWithdrawal');
         const withdrawalMessage = document.getElementById('withdrawalMessage');
-        const backBtn = document.getElementById('backBtn');
-        const loginPrompt = document.getElementById('loginPrompt');
+        const toast = document.getElementById('toast');
+        const coinBalance = document.getElementById('coinBalance');
 
-        let userId = null;
+        let verifiedUsername = null;
+        let userRef = null;
 
         window.onload = function() {
             // Initialize Adsterra Ads
             window.adsterra = window.adsterra || [];
             adsterra.push({ zone_id: 949046, container: 'adsterra-footer' });
 
-            // Auto-fetch balance on page load in WebView
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    userId = user.uid;
-                    loadingOverlay.style.display = 'none';
-                    loginPrompt.style.display = 'none';
-                    loadCoinBalance(); // Auto-fetch balance
-                } else {
-                    loadingOverlay.style.display = 'none';
-                    coinBalance.textContent = '0 Coins'; // Default to 0 if not logged in
-                    withdrawalForm.style.display = 'none';
-                    showWithdrawalForm.style.display = 'none';
-                    loginPrompt.style.display = 'block';
-                    // Optionally, you can add a login redirect or button here
-                    // e.g., window.location.href = 'index.html';
-                }
-            });
+            loadingOverlay.style.display = 'none';
 
-            showWithdrawalForm.addEventListener('click', () => {
-                if (userId) {
-                    withdrawalForm.style.display = 'block';
-                    showWithdrawalForm.style.display = 'none';
-                } else {
-                    loginPrompt.style.display = 'block';
+            verifyBtn.addEventListener('click', () => {
+                const userName = username.value.trim();
+                if (!userName) {
+                    verificationMessage.textContent = 'Please enter a username.';
+                    verificationMessage.style.color = 'red';
+                    return;
                 }
+
+                database.ref('users').orderByChild('name').equalTo(userName).once('value', snapshot => {
+                    if (snapshot.exists()) {
+                        const userId = Object.keys(snapshot.val())[0];
+                        verifiedUsername = userName;
+                        userRef = database.ref(`users/${userId}`);
+                        verificationMessage.textContent = 'Verification successful!';
+                        verificationMessage.style.color = 'green';
+                        showToast('Verification successful!');
+                        loadCoinBalance();
+                        verificationSection.classList.remove('active');
+                        withdrawalForm.classList.add('active');
+                    } else {
+                        verificationMessage.textContent = 'Username not found. Please try again.';
+                        verificationMessage.style.color = 'red';
+                    }
+                });
             });
 
             submitWithdrawal.addEventListener('click', () => {
-                if (!userId) {
-                    withdrawalMessage.textContent = 'Please log in to submit a withdrawal.';
+                if (!verifiedUsername || !userRef) {
+                    withdrawalMessage.textContent = 'Please verify your username first.';
                     withdrawalMessage.style.color = 'red';
                     return;
                 }
@@ -376,21 +335,22 @@
                 const upi = upiId.value.trim();
                 const amount = parseInt(withdrawAmount.value);
 
-                if (!upi || !amount || amount < 50) {
-                    withdrawalMessage.textContent = 'Please enter a valid UPI ID and amount (minimum 50 coins).';
+                if (!upi || !amount) {
+                    withdrawalMessage.textContent = 'Please enter a valid UPI ID and select an amount.';
                     withdrawalMessage.style.color = 'red';
                     return;
                 }
 
-                database.ref(`users/${userId}/coins`).once('value', snapshot => {
-                    const coins = snapshot.val() || 0;
-                    if (amount > coins) {
-                        withdrawalMessage.textContent = 'Insufficient coins for withdrawal.';
+                userRef.once('value', snapshot => {
+                    const user = snapshot.val() || {};
+                    const balance = parseInt(user.balance) || 0; // Use balance field
+                    if (amount > balance) {
+                        withdrawalMessage.textContent = 'Insufficient balance for withdrawal.';
                         withdrawalMessage.style.color = 'red';
                     } else {
                         const requestId = database.ref('requests/withdrawals').push().key;
                         const withdrawalData = {
-                            userId: userId,
+                            username: verifiedUsername,
                             upiId: upi,
                             amount: amount,
                             status: 'pending',
@@ -398,15 +358,13 @@
                         };
                         database.ref(`requests/withdrawals/${requestId}`).set(withdrawalData)
                             .then(() => {
+                                // Update balance in real-time
+                                userRef.update({ balance: balance - amount });
                                 withdrawalMessage.textContent = 'Withdrawal request submitted successfully!';
                                 withdrawalMessage.style.color = 'green';
+                                showToast('Withdrawal request submitted!');
                                 upiId.value = '';
                                 withdrawAmount.value = '';
-                                setTimeout(() => {
-                                    withdrawalForm.style.display = 'none';
-                                    showWithdrawalForm.style.display = 'block';
-                                    withdrawalMessage.textContent = '';
-                                }, 2000);
                             })
                             .catch(error => {
                                 withdrawalMessage.textContent = 'Error submitting request. Try again.';
@@ -415,19 +373,23 @@
                     }
                 });
             });
-
-            backBtn.addEventListener('click', () => {
-                window.history.back();
-            });
         };
 
         function loadCoinBalance() {
-            if (userId) {
-                database.ref(`users/${userId}`).on('value', snapshot => {
+            if (userRef) {
+                userRef.on('value', snapshot => {
                     const user = snapshot.val() || {};
-                    coinBalance.textContent = `${user.coins || 0} Coins`;
+                    coinBalance.textContent = `Balance: ${parseInt(user.balance) || 0}`; // Use balance field
                 });
             }
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
         }
     </script>
 </body>
