@@ -193,6 +193,13 @@
             margin-top: 20px;
         }
 
+        #loginPrompt {
+            display: none;
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+
         @media (max-width: 768px) {
             .wallet-balance {
                 padding: 20px;
@@ -288,6 +295,7 @@
                     <i class="fas fa-download"></i> Request Withdrawal
                 </button>
             </div>
+            <div id="loginPrompt">Please log in through the app to view your balance.</div>
         </div>
 
         <footer>
@@ -322,6 +330,7 @@
         const submitWithdrawal = document.getElementById('submitWithdrawal');
         const withdrawalMessage = document.getElementById('withdrawalMessage');
         const backBtn = document.getElementById('backBtn');
+        const loginPrompt = document.getElementById('loginPrompt');
 
         let userId = null;
 
@@ -330,23 +339,40 @@
             window.adsterra = window.adsterra || [];
             adsterra.push({ zone_id: 949046, container: 'adsterra-footer' });
 
-            // Auto-fetch balance on page load if user is logged in
+            // Auto-fetch balance on page load in WebView
             auth.onAuthStateChanged(user => {
                 if (user) {
                     userId = user.uid;
                     loadingOverlay.style.display = 'none';
+                    loginPrompt.style.display = 'none';
                     loadCoinBalance(); // Auto-fetch balance
                 } else {
-                    window.location.href = 'index.html'; // Redirect to login if not authenticated
+                    loadingOverlay.style.display = 'none';
+                    coinBalance.textContent = '0 Coins'; // Default to 0 if not logged in
+                    withdrawalForm.style.display = 'none';
+                    showWithdrawalForm.style.display = 'none';
+                    loginPrompt.style.display = 'block';
+                    // Optionally, you can add a login redirect or button here
+                    // e.g., window.location.href = 'index.html';
                 }
             });
 
             showWithdrawalForm.addEventListener('click', () => {
-                withdrawalForm.style.display = 'block';
-                showWithdrawalForm.style.display = 'none';
+                if (userId) {
+                    withdrawalForm.style.display = 'block';
+                    showWithdrawalForm.style.display = 'none';
+                } else {
+                    loginPrompt.style.display = 'block';
+                }
             });
 
             submitWithdrawal.addEventListener('click', () => {
+                if (!userId) {
+                    withdrawalMessage.textContent = 'Please log in to submit a withdrawal.';
+                    withdrawalMessage.style.color = 'red';
+                    return;
+                }
+
                 const upi = upiId.value.trim();
                 const amount = parseInt(withdrawAmount.value);
 
